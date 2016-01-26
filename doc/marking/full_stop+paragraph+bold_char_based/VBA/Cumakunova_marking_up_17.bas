@@ -1,4 +1,4 @@
-Attribute VB_Name = "KyrgyzEncyclopedia_16"
+Attribute VB_Name = "Cumakunava TEI Markinup API version_1"
 Sub MarkTerms()
 ' ----- Now. There is a dash defect in sub, that is, it may insert </term> before or after dash.
 Application.Run "RemoveDoubleSpaces"
