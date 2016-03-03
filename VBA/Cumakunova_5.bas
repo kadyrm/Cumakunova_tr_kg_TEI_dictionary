@@ -5,7 +5,13 @@ Attribute VB_Name = "Module2"
 ' 2) Dim MyVar, AnotherVar As Integer  // MyVar is not Integer in this case, it is Variant
 ' 3) Set var= value // is used only for objects not for var types
 ' 4) r.SetRange  // redefine range bounaries
-
+Sub Show_ascw()
+    Dim kod As Long
+    kod = AscW(Selection.Text)
+    str1 = ChrW(kod)
+    MsgBox "Selected text: " & Selection.Text & Chr(13) & "ASCW: " & kod
+    'Selection.Range.InsertAfter (kod)
+End Sub
 Function mark_lines_pointed(ByVal m_pointer As String, ByVal m_new_tag As String) As Boolean
 Dim exit_code As Boolean
 Selection.HomeKey wdStory
@@ -19,14 +25,14 @@ mark_pointed_lines = exit_code
 End Function
 
 Function mark_line_containing(ByVal m_what, ByVal m_tag) As Boolean
-    Dim r As range
+    Dim r As Range
     Set r = find_str(m_what)
     If (r Is Nothing) = False Then
     
         Selection.HomeKey wdLine
-        Selection.range.InsertBefore "<" & m_tag & ">"
+        Selection.Range.InsertBefore "<" & m_tag & ">"
         Selection.EndKey wdLine
-        Selection.range.InsertAfter "</" & m_tag & ">"
+        Selection.Range.InsertAfter "</" & m_tag & ">"
         
         mark_line_containing = True
     Else
@@ -35,9 +41,9 @@ Function mark_line_containing(ByVal m_what, ByVal m_tag) As Boolean
 
 End Function
 Sub test_insert_at()
-    Dim r As range
+    Dim r As Range
     Do
-        Set r = find_EOE_terminated_by_white_space(Selection.range)
+        Set r = find_EOE_terminated_by_white_space(Selection.Range)
         If r Is Nothing Then
             MsgBox ("no EOE found! Good bay !")
             Exit Sub
@@ -45,18 +51,18 @@ Sub test_insert_at()
         Set r = insert_at(r, r.Characters.Count - 1, "EOE")
         r.Select
         'Selection.range.SetRange Start:=r.Start, End:=r.End
-        Selection.Collapse direction:=wdCollapseEnd
+        Selection.Collapse Direction:=wdCollapseEnd
     Loop
     
     
 End Sub
-Function insert_at(ByRef m_rng As range, ByVal m_pos As Integer, ByVal m_what As String) As range
+Function insert_at(ByRef m_rng As Range, ByVal m_pos As Integer, ByVal m_what As String) As Range
     If m_pos > m_rng.Characters.Count Then
         Set insert_at = Nothing
         Exit Function
     End If
     
-    Dim r As range
+    Dim r As Range
     Set r = m_rng
     r.SetRange Start:=m_rng.Start + m_pos, End:=m_rng.End
     r.InsertBefore (m_what)
@@ -64,7 +70,7 @@ Function insert_at(ByRef m_rng As range, ByVal m_pos As Integer, ByVal m_what As
     
     Set insert_at = m_rng
 End Function
-Function find_str(ByVal m_what As String) As range
+Function find_str(ByVal m_what As String) As Range
 Selection.find.ClearFormatting
     With Selection.find
         .Text = m_what
@@ -80,20 +86,20 @@ Selection.find.ClearFormatting
     End With
     Selection.find.Execute
     If Selection.find.found Then
-        Set find_str = Selection.range
+        Set find_str = Selection.Range
     Else
         Set find_str = Nothing
     End If
     
 End Function
 Sub test_find_white_space_eoe()
-    Dim r As range
-    Set r = find_EOE_terminated_by_white_space(Selection.range)
+    Dim r As Range
+    Set r = find_EOE_terminated_by_white_space(Selection.Range)
 End Sub
 
-Function find_EOE_terminated_by_white_space(m_r As range) As range
+Function find_EOE_terminated_by_white_space(m_r As Range) As Range
 ' EOE - End of Entry
-    Dim r As range
+    Dim r As Range
     Dim flag As Boolean
     Dim i As Integer
     flag = False
@@ -128,8 +134,34 @@ If m_counter Mod m_max_loop = 0 Then
         End If
 End If
 End Function
-Sub test_find_str()
-    Dim r As range
+Sub test_find_double_carret_return()
+
+    Dim r As Range
+    Do
+        Set r = find_by_ascw(13)
+        If r Is Nothing Then
+            Exit Sub
+        End If
+        Selection.Collapse wdCollapseEnd
+        Selection.MoveRight wdCharacter, 1, True
+        code = AscW(Selection.Text)
+        If code = 13 Then
+            MsgBox "double par found!!"
+            Exit Sub
+        End If
+        Selection.Collapse wdCollapseEnd
+    Loop
+End Sub
+Function find_by_ascw(m_ascw As Long) As Range
+   
+    Dim r As Range
+    str1 = ChrW(m_ascw)
+    Set r = find_str(str1)
+    Set find_by_ascw = r
+    
+End Function
+Sub test_fs_ws_letter()
+    Dim r As Range
     Set r = find_str(".^w^$")
     If r.Bold Then
         MsgBox ("Found range is bold.")
@@ -142,10 +174,10 @@ Sub test_find_str()
     End If
     
 End Sub
-Function is_in_one_line(r As range) As Boolean
+Function is_in_one_line(r As Range) As Boolean
     Dim l1, l2 As Integer
-    Dim r1 As range
-    Dim r2 As range
+    Dim r1 As Range
+    Dim r2 As Range
     Set r1 = r.Characters.First
     Set r2 = r.Characters.Last
     l1 = GetLineNum(r1)
@@ -159,29 +191,29 @@ Function is_in_one_line(r As range) As Boolean
 End Function
 Sub WhereAmI()
     
-    MsgBox "Paragraph number: " & GetParNum(Selection.range) & vbCrLf & _
-    "Absolute line number: " & GetAbsoluteLineNum(Selection.range) & vbCrLf & _
-    "Relative line number: " & GetLineNum(Selection.range)
+    MsgBox "Paragraph number: " & GetParNum(Selection.Range) & vbCrLf & _
+    "Absolute line number: " & GetAbsoluteLineNum(Selection.Range) & vbCrLf & _
+    "Relative line number: " & GetLineNum(Selection.Range)
 End Sub
  
  
-Function GetParNum(r As range) As Integer
-    Dim rParagraphs As range
+Function GetParNum(r As Range) As Integer
+    Dim rParagraphs As Range
     Dim CurPos As Long
      
     r.Select
     CurPos = ActiveDocument.Bookmarks("\startOfSel").Start
-    Set rParagraphs = ActiveDocument.range(Start:=0, End:=CurPos)
+    Set rParagraphs = ActiveDocument.Range(Start:=0, End:=CurPos)
     GetParNum = rParagraphs.Paragraphs.Count
 End Function
  
-Function GetLineNum(r As range) As Integer
+Function GetLineNum(r As Range) As Integer
      'relative to current page
     GetLineNum = r.Information(wdFirstCharacterLineNumber)
 End Function
  
-Function GetAbsoluteLineNum(r As range) As Integer
-    Dim i1 As Integer, i2 As Integer, Count As Integer, rTemp As range
+Function GetAbsoluteLineNum(r As Range) As Integer
+    Dim i1 As Integer, i2 As Integer, Count As Integer, rTemp As Range
      
     r.Select
     Do
