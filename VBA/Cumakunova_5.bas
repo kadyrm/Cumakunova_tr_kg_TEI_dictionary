@@ -70,6 +70,78 @@ Function insert_at(ByRef m_rng As Range, ByVal m_pos As Integer, ByVal m_what As
     
     Set insert_at = m_rng
 End Function
+Sub test_replace_str()
+
+End Sub
+Function replace_all(ByVal m_find As String, ByVal m_replace As String) As Long
+    'returns number of replacements
+    replace_all = CountNoOfReplaces(m_find, m_replace)
+End Function
+Sub apply_replace_all()
+    MsgBox "Number of replacements: " & replace_all("^p<article>", "<article>^p"), vbInformation
+End Sub
+Function CountNoOfReplaces(StrFind As String, StrReplace As String) As Long
+
+Dim NumCharsBefore As Long, NumCharsAfter As Long, LengthsAreEqual As Boolean
+
+    Application.ScreenUpdating = False
+
+    'Check whether the length of the Find and Replace strings are the same; _
+    if they are, prefix the replace string with a hash (#)
+    If Len(StrFind) = Len(StrReplace) Then
+        LengthsAreEqual = True
+        StrReplace = "#" & StrReplace
+    End If
+
+    'Get the number of chars in the doc BEFORE doing Find & Replace
+    NumCharsBefore = ActiveDocument.Characters.Count
+
+    'Do the Find and Replace
+    With Selection.find
+        .ClearFormatting
+        .Replacement.ClearFormatting
+        .Text = StrFind
+        .Replacement.Text = StrReplace
+        .Forward = True
+        .Wrap = wdFindContinue
+        .Format = False
+        .MatchCase = False
+        .MatchWholeWord = True
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+        .Execute replace:=wdReplaceAll
+    End With
+
+    'Get the number of chars AFTER doing Find & Replace
+    NumCharsAfter = ActiveDocument.Characters.Count
+
+    'Calculate of the number of replacements,
+    'and put the result into the function name variable
+    CountNoOfReplaces = (NumCharsBefore - NumCharsAfter) / _
+            (Len(StrFind) - Len(StrReplace))
+
+    'If the lengths of the find & replace strings were equal at the start, _
+    do another replace to strip out the #
+    If LengthsAreEqual Then
+
+        StrFind = StrReplace
+        'Strip off the hash
+        StrReplace = Mid$(StrReplace, 2)
+
+        With Selection.find
+            .Text = StrFind
+            .Replacement.Text = StrReplace
+            .Execute replace:=wdReplaceAll
+        End With
+
+    End If
+
+    Application.ScreenUpdating = True
+    'Free up memory
+    ActiveDocument.UndoClear
+
+End Function
 Function find_str(ByVal m_what As String) As Range
 Selection.find.ClearFormatting
     With Selection.find
@@ -96,8 +168,11 @@ Sub test_find_white_space_eoe()
     Dim r As Range
     Set r = find_EOE_terminated_by_white_space(Selection.Range)
 End Sub
-
+Function find_EOE_fs_cr_l(m_r As Range) As Range
+    
+End Function
 Function find_EOE_terminated_by_white_space(m_r As Range) As Range
+' source file to be marked: Some Web Engine
 ' EOE - End of Entry
     Dim r As Range
     Dim flag As Boolean
