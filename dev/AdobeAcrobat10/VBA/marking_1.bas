@@ -134,7 +134,9 @@ Sub apply_pattern1_1()
     
 End Sub
 Sub application_find_and_insert_at_all()
-    n = find_and_insert_at_all(".^w</P>^p<P>^$", -4, "<EOA>")
+    'n = find_and_insert_at_all(".^w</P>^p<P>^$", -4, "<EOA>")
+    'n = find_and_insert_at_all(".^w</P>^p<page><P>^#^#^w</P></page>^p<P>^$", -4, "<EOA>") ' when page_tag between two entries
+    n = find_and_insert_at_all("?^w</P>^p<P>^$", -4, "</article>" & Chr(13) & "<article>" & Chr(13))
 End Sub
 Function find_and_insert_at_all(m_pattern As String, m_pos As Integer, m_insert_t As String) As Long
 ' if m_pos is negative the function will insert the text in the position set off from the end of the found range
