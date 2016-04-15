@@ -6,6 +6,12 @@ Attribute VB_Name = "Module2"
 ' 3) Set var= value // is used only for objects not for var types
 ' 4) r.SetRange  // redefine range bounaries
 ' 5) Chr(13)    // new line in VBA
+Sub main()
+    ' lets normalize paragraphs, Chr(13) corresponds to paragraph character
+    m = replace_all_repeatedly(Chr(13) & Chr(13), Chr(13))
+    ' lets normalize spaces
+    m = replace_all_repeatedly(" " & " ", " ")
+End Sub
 Sub Show_ascw()
     Dim kod As Long
     kod = AscW(Selection.Text)
@@ -20,7 +26,7 @@ exit_code = mark_line_containing(m_pointer, m_new_tag)
 loop_limit = 0
     Do While r
         exit_code = mark_line_containing(m_pointer, m_new_tag)
-        loop_limit = loop_checker(loop_limit, 1000, "main")
+        loop_limit = deadlock_saveguard(loop_limit, 1000, "main")
     Loop
 mark_pointed_lines = exit_code
 End Function
@@ -302,19 +308,38 @@ Function find_EOE_terminated_by_white_space(m_r As Range) As Range
         Else
             Set find_EOE_terminated_by_white_space = Nothing
         End If
-        i = loop_checker(i, 100, "white_space_eof")
+        i = deadlock_saveguard(i, 100, "white_space_eof")
     Loop
     
     
 End Function
-Function loop_checker(ByVal m_counter As Integer, ByVal m_max_loop As Integer, ByVal m_func_name As String) As Integer
+Function deadlock_saveguard(ByVal m_counter As Integer, ByVal m_max_loop As Integer, ByVal m_func_name As String) As Integer
 m_counter = m_counter + 1
-loop_checker = m_counter
+deadlock_saveguard = m_counter
 If m_counter Mod m_max_loop = 0 Then
         If MsgBox("Do you want to continue the loop in " & m_func_name, vbYesNo, "Debugging") = vbNo Then
            Stop
         End If
 End If
+End Function
+Function replace_all_repeatedly(m_what As String, m_by As String)
+    ' This procedure replaces "m_what" repeatedly by "m_by" while there are absolutely no new occurrencies
+    
+    ' lets define limits for deadlock_saveguard
+    Dim max, current As Integer
+    max = 2000
+    current = 0
+    ' lets define variable for number of replacements
+    Dim l, m As Long
+    l = 1 ' lets set it to 1 in order to enter the loop
+    m = 0 ' this variable holds sum of all  replacements
+    Do While l <> 0
+        l = replace_all(m_what, m_by)
+        m = m + l
+        MsgBox ("Loop number: " & current + 1 & Chr(13) & "Replacements made: " & l)
+        current = deadlock_saveguard(current, max, "replace_all_repeatedly")
+    Loop
+    replace_all_repeatedly = m
 End Function
 Sub test_find_double_carret_return()
 
