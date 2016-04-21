@@ -6,11 +6,59 @@ Attribute VB_Name = "Module2"
 ' 3) Set var= value // is used only for objects not for var types
 ' 4) r.SetRange  // redefine range bounaries
 ' 5) Chr(13)    // new line in VBA
+' 6) ChrW(1199) // Use this instead of chr() when dealing with unicode characters
+' 7) Optional keyword : Optional arguments are preceded by the Optional keyword in the procedure definition.
+'*********
+' Global variables:
+'Kyrgyz unique characters
+Dim g_ky_origin As String
+' Turkish unique characters
+Dim g_tr_origin As String
+'punctuation chars
+Dim g_punct As String
+
+Function init_global_vars()
+'Kyrgyz unique characters
+g_ky_origin = (ChrW(1199)) & ChrW(1257) & ChrW(1187) & ChrW(1186) & ChrW(1198) & ChrW(1256)
+' Turkish unique characters
+' i.e. 246-o  252-u  351-s  305-i  231-c  287-g; C-190 O-214 S-350 I-304 U-220 G-286
+g_tr_origin = (ChrW(1199)) & ChrW(1257) & ChrW(1187) & ChrW(1186) & ChrW(1198) & ChrW(1256)
+'punctuation chars
+g_punct = ")?" ' Issue: '!' cannot be added here with wildcards
+End Function
 Sub main()
-    ' lets normalize paragraphs, Chr(13) corresponds to paragraph character
+    ' first of all lets initialize global variables
+    Call init_global_vars
+    ' lets normalize paragraphs.
     m = replace_all_repeatedly(Chr(13) & Chr(13), Chr(13))
     ' lets normalize spaces
     m = replace_all_repeatedly(" " & " ", " ")
+    ' Subdevide the plain text to article elements
+    Call MarkupArticles
+End Sub
+Sub MarkupKeys()
+ ' *************Demarkation****************
+    Dim InsertWhat As String
+    Dim FindWhat As String
+    FindWhat = "[<]article[>]" & g_ky_origin & g_punct & "]" & "." & Chr(13) & "[A-Za-z" & g_tr_origin & "]"
+    InsertWhat = Chr(13) & "</article>" & Chr(13) & "<article>"
+    n = find_and_insert_at_all(m_FindWhat:=FindWhat, m_InsertWhere:=-2, m_InsertWhat:=InsertWhat, m_MatchWildCards:=True)
+    ' ******************************************
+End Sub
+Sub MarkupArticles()
+    Selection.HomeKey unit:=wdStory
+    ' *************Demarkation****************
+    Dim InsertWhat As String
+    Dim FindWhat As String
+    FindWhat = "[Р-пр-џ" & g_ky_origin & g_punct & "]" & "." & Chr(13) & "[A-Za-z" & g_tr_origin & "]"
+    InsertWhat = Chr(13) & "</article>" & Chr(13) & "<article>"
+    n = find_and_insert_at_all(m_FindWhat:=FindWhat, m_InsertWhere:=-2, m_InsertWhat:=InsertWhat, m_MatchWildCards:=True)
+    ' ******************************************
+    ' Completing first and last articles
+    Selection.HomeKey unit:=wdStory
+    Selection.Range.InsertAfter "<article>"
+    Selection.EndKey unit:=wdStory
+    Selection.Range.InsertAfter "</article>"
 End Sub
 Sub Show_ascw()
     Dim kod As Long
@@ -140,26 +188,34 @@ Sub apply_pattern1_1()
     
 End Sub
 Sub application_find_and_insert_at_all()
+    Call init_global_vars
     'n = find_and_insert_at_all(".^w</P>^p<P>^$", -4, "<EOA>")
     'n = find_and_insert_at_all(".^w</P>^p<page><P>^#^#^w</P></page>^p<P>^$", -4, "<EOA>") ' when page_tag between two entries
-    n = find_and_insert_at_all("?^w</P>^p<P>^$", -4, "</article>" & Chr(13) & "<article>" & Chr(13))
+    'n = find_and_insert_at_all("?^w</P>^p<P>^$", -4, "</article>" & Chr(13) & "<article>" & Chr(13))
+    ' *************
+    Dim InsertWhat As String
+    Dim FindWhat As String
+    FindWhat = "[Р-пр-џ" & g_ky_origin & g_punct & "]" & "." & Chr(13) & "[A-Za-z" & g_tr_origin & "]"
+    InsertWhat = Chr(13) & "</article>" & Chr(13) & "<article>"
+    n = find_and_insert_at_all(m_FindWhat:=FindWhat, m_InsertWhere:=-2, m_InsertWhat:=InsertWhat, m_MatchWildCards:=True)
+    ' *************
 End Sub
-Function find_and_insert_at_all(m_pattern As String, m_pos As Integer, m_insert_t As String) As Long
-' if m_pos is negative the function will insert the text in the position set off from the end of the found range
+Function find_and_insert_at_all(m_FindWhat As String, m_InsertWhere As Integer, m_InsertWhat As String, Optional m_MatchWildCards As Boolean = False) As Long
+' if m_InsertWhere is negative the function will insert the text at the position m_InsertWhere steps to the left from the end of the found range
     Dim r As Range
     Dim counter As Long
     counter = 0
     Do
-        Set r = find_str(m_pattern)
+        Set r = find_str(m_FindWhat, m_MatchWildCards)
         If r Is Nothing Then
             MsgBox (counter & " matching of the pattern were found! Good bay !")
             find_and_insert_at_all = counter
             Exit Function
         End If
-        If m_pos < 0 Then
-            Set r = insert_at(r, r.Characters.Count + m_pos, m_insert_t)
+        If m_InsertWhere < 0 Then
+            Set r = insert_at(r, r.Characters.Count + m_InsertWhere, m_InsertWhat)
         Else
-            Set r = insert_at(r, m_pos, m_insert_t)
+            Set r = insert_at(r, m_InsertWhere, m_InsertWhat)
         End If
         'r.Select
         
@@ -169,15 +225,15 @@ Function find_and_insert_at_all(m_pattern As String, m_pos As Integer, m_insert_
     Loop
     find_and_insert_at_all = counter
 End Function
-Function insert_at(ByRef m_rng As Range, ByVal m_pos As Integer, ByVal m_what As String) As Range
-    If m_pos > m_rng.Characters.Count Then
+Function insert_at(ByRef m_rng As Range, ByVal m_InsertWhere As Integer, ByVal m_what As String) As Range
+    If m_InsertWhere > m_rng.Characters.Count Then
         Set insert_at = Nothing
         Exit Function
     End If
     
     Dim r As Range
     Set r = m_rng
-    r.SetRange Start:=m_rng.Start + m_pos, End:=m_rng.End
+    r.SetRange Start:=m_rng.Start + m_InsertWhere, End:=m_rng.End
     r.InsertBefore (m_what)
     m_rng.SetRange Start:=m_rng.Start, End:=m_rng.End + Len(m_what)
     
@@ -210,7 +266,7 @@ Dim NumCharsBefore As Long, NumCharsAfter As Long, LengthsAreEqual As Boolean
     NumCharsBefore = ActiveDocument.Characters.Count
 
     'Do the Find and Replace
-    With Selection.find
+    With Selection.Find
         .ClearFormatting
         .Replacement.ClearFormatting
         .Text = StrFind
@@ -242,7 +298,7 @@ Dim NumCharsBefore As Long, NumCharsAfter As Long, LengthsAreEqual As Boolean
         'Strip off the hash
         StrReplace = Mid$(StrReplace, 2)
 
-        With Selection.find
+        With Selection.Find
             .Text = StrFind
             .Replacement.Text = StrReplace
             .Execute replace:=wdReplaceAll
@@ -255,9 +311,31 @@ Dim NumCharsBefore As Long, NumCharsAfter As Long, LengthsAreEqual As Boolean
     ActiveDocument.UndoClear
 
 End Function
-Function find_str(ByVal m_what As String) As Range
-Selection.find.ClearFormatting
-    With Selection.find
+Function find_str(ByVal m_FindWhat As String, Optional m_MatchWildCards As Boolean = False) As Range
+Selection.Find.ClearFormatting
+    With Selection.Find
+        .Text = m_FindWhat
+        .Replacement.Text = ""
+        .Forward = True
+        .Wrap = wdFindStop
+        .Format = True
+        .MatchCase = True
+        .MatchWholeWord = False
+        .MatchWildcards = m_MatchWildCards
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute
+    If Selection.Find.found Then
+        Set find_str = Selection.Range
+    Else
+        Set find_str = Nothing
+    End If
+    
+End Function
+Function find_with_wildcards(ByVal m_what As String) As Range
+Selection.Find.ClearFormatting
+    With Selection.Find
         .Text = m_what
         .Replacement.Text = ""
         .Forward = True
@@ -265,18 +343,25 @@ Selection.find.ClearFormatting
         .Format = True
         .MatchCase = True
         .MatchWholeWord = False
-        .MatchWildcards = False
+        .MatchWildcards = True
         .MatchSoundsLike = False
         .MatchAllWordForms = False
     End With
-    Selection.find.Execute
-    If Selection.find.found Then
-        Set find_str = Selection.Range
+    Selection.Find.Execute
+    If Selection.Find.found Then
+        Set find_with_wildcards = Selection.Range
     Else
-        Set find_str = Nothing
+        Set find_with_wildcards = Nothing
     End If
     
 End Function
+Sub test_find_with_wildcards()
+   
+    Call init_global_vars
+    ' Start searching
+    'MsgBox g_punct
+    Set r = find_str(m_FindWhat:="[Р-пр-џ" & g_ky_origin & g_punct & "]" & "." & Chr(13) & "[A-Za-z]", m_MatchWildCards:=True)
+End Sub
 Sub test_find_white_space_eoe()
     Dim r As Range
     Set r = find_EOE_terminated_by_white_space(Selection.Range)
