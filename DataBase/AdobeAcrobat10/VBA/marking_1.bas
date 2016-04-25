@@ -9,12 +9,17 @@ Attribute VB_Name = "Module2"
 ' 6) ChrW(1199) // Use this instead of chr() when dealing with unicode characters
 ' 7) Optional keyword : Optional arguments are preceded by the Optional keyword in the procedure definition.
 ' 8) Selection.Collapse direction:=wdCollapseEnd // not Selection.range.collapse
+' 9) Selection object is not a range, therefor it has different methods, e.g: Selection.MoveRight unit:=wdWord, Count:=1, Extend:=wdExtend   'm_cur_pos.MoveEnd unit:=wdWord, Count:=1
+' 10) Issue: '!' cannot be added with wildcards
+' 11) Turkish 'i' without upper point cannot be uppercased, and Turkish 'I' with the point cannot be lowercased by means of UCase(String)
 '*********
 ' Global variables:
 'Kyrgyz unique characters
 Dim g_ky_origin As String
+Dim g_ky_charset As String
 ' Turkish unique characters
 Dim g_tr_origin As String
+Dim g_tr_charset As String
 'punctuation chars
 Dim g_punct As String
 
@@ -22,15 +27,19 @@ Function init_global_vars()
 'Kyrgyz unique characters
 g_ky_origin = (ChrW(1199)) & ChrW(1257) & ChrW(1187) & ChrW(1186) & ChrW(1198) & ChrW(1256)
 ' Turkish unique characters
-' i.e. 246-o  252-u  351-s  305-i  231-c  287-g; C-190 O-214 S-350 I-304 U-220 G-286
-g_tr_origin = (ChrW(246)) & ChrW(252) & ChrW(351) & ChrW(305) & ChrW(231) & ChrW(287) & ChrW(190) & ChrW(214) & ChrW(350) & ChrW(304) & ChrW(220) & ChrW(286)
+' i.e. 246-o  252-u  351-s  305-i  231-c  287-g; C-199 O-214 S-350 I-304 U-220 G-286
+g_tr_origin = (ChrW(246)) & ChrW(252) & ChrW(351) & ChrW(305) & ChrW(231) & ChrW(287) & ChrW(199) & ChrW(214) & ChrW(350) & ChrW(304) & ChrW(220) & ChrW(286)
 'punctuation chars
 g_punct = ")?" ' Issue: '!' cannot be added here with wildcards
+
+g_ky_charset = "¿¡¬√ƒ≈®∆«»… ÀÃÕŒœ–—“”‘’÷◊Ÿ‹€⁄›ﬁﬂ" & LCase("¿¡¬√ƒ≈®∆«»… ÀÃÕŒœ–—“”‘’÷◊Ÿ‹€⁄›ﬁﬂ") & g_ky_origin
+g_tr_charset = "ABCDEFGHIGKLMNOPQRSTUVWXYZ" & LCase("ABCDEFGHIGKLMNOPQRSTUVWXYZ") & g_tr_origin
+
 End Function
 Sub main()
     '' first of all lets initialize global variables
     Call init_global_vars
-    '' lets normalize paragraphs.
+   '' lets normalize paragraphs.
     m = replace_all_repeatedly(Chr(13) & Chr(13), Chr(13))
     ' lets normalize spaces
     m = replace_all_repeatedly(" " & " ", " ")
@@ -239,7 +248,7 @@ Function find_and_insert_at_all(m_FindWhat As String, m_InsertWhere As Integer, 
     Loop
     find_and_insert_at_all = counter
 End Function
-Function find_and_markup_all(m_FindWhat As String, m_Tag As String, Optional m_PropsAndVals As String = "", Optional m_MatchWildCards As Boolean = False, Optional m_MoveLeft As Integer = 0, Optional m_MoveRight As Integer = 0) As Long
+Function find_and_markup_all(m_FindWhat As String, m_Tag As String, Optional ByVal m_PropsAndVals As String = "", Optional m_MatchWildCards As Boolean = False, Optional m_MoveLeft As Integer = 0, Optional m_MoveRight As Integer = 0) As Long
 ' finds some text and marks it with specified tag with properties
 '
     ' Performing search and markup on each iteration
@@ -267,7 +276,7 @@ Function find_and_markup_all(m_FindWhat As String, m_Tag As String, Optional m_P
         If m_PropsAndVals <> "" Then
             ' putting delimiting whitespace
             Dim tmp As String
-            tmp = m_PropsAndVals
+            tmp = Trim(m_PropsAndVals)
             m_PropsAndVals = " " & tmp
         End If
         start_tag = "<" & m_Tag & m_PropsAndVals & ">"
@@ -280,6 +289,24 @@ Function find_and_markup_all(m_FindWhat As String, m_Tag As String, Optional m_P
         counter = counter + 1
     Loop
     find_and_markup_all = counter
+End Function
+Function select_word_at(m_Where As Range) As Range
+' selects the word the m_Where range is in
+    m_Where.Select
+    Selection.MoveRight unit:=wdWord, Count:=1, Extend:=wdExtend
+    Selection.Collapse direction:=wdCollapseEnd
+    Selection.MoveLeft unit:=wdWord, Count:=1, Extend:=wdExtend
+    
+    Set m_Where = Selection.Range
+    Set select_word_at = m_Where
+End Function
+Sub test_select_word()
+    Dim r As Range
+    Set r = Selection.Range
+    Set r = select_word_at(r)
+End Sub
+Function change_charset(m_letter As String) As String
+
 End Function
 Function insert_at(ByRef m_rng As Range, ByVal m_InsertWhere As Integer, ByVal m_what As String) As Range
     If m_InsertWhere > m_rng.Characters.Count Then
