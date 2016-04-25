@@ -8,6 +8,7 @@ Attribute VB_Name = "Module2"
 ' 5) Chr(13)    // new line in VBA
 ' 6) ChrW(1199) // Use this instead of chr() when dealing with unicode characters
 ' 7) Optional keyword : Optional arguments are preceded by the Optional keyword in the procedure definition.
+' 8) Selection.Collapse direction:=wdCollapseEnd // not Selection.range.collapse
 '*********
 ' Global variables:
 'Kyrgyz unique characters
@@ -22,27 +23,40 @@ Function init_global_vars()
 g_ky_origin = (ChrW(1199)) & ChrW(1257) & ChrW(1187) & ChrW(1186) & ChrW(1198) & ChrW(1256)
 ' Turkish unique characters
 ' i.e. 246-o  252-u  351-s  305-i  231-c  287-g; C-190 O-214 S-350 I-304 U-220 G-286
-g_tr_origin = (ChrW(1199)) & ChrW(1257) & ChrW(1187) & ChrW(1186) & ChrW(1198) & ChrW(1256)
+g_tr_origin = (ChrW(246)) & ChrW(252) & ChrW(351) & ChrW(305) & ChrW(231) & ChrW(287) & ChrW(190) & ChrW(214) & ChrW(350) & ChrW(304) & ChrW(220) & ChrW(286)
 'punctuation chars
 g_punct = ")?" ' Issue: '!' cannot be added here with wildcards
 End Function
 Sub main()
-    ' first of all lets initialize global variables
+    '' first of all lets initialize global variables
     Call init_global_vars
-    ' lets normalize paragraphs.
+    '' lets normalize paragraphs.
     m = replace_all_repeatedly(Chr(13) & Chr(13), Chr(13))
     ' lets normalize spaces
     m = replace_all_repeatedly(" " & " ", " ")
-    ' Subdevide the plain text to article elements
-    Call MarkupArticles
+    '' Subdevide the plain text to article elements
+    'Call MarkupArticles
+    Call MarkupKeys
+    
+End Sub
+Sub MarkupDefinitions()
+ ' *************Demarkation****************
+    Dim FindWhat As String
+    Dim PropsAndVals As String
+    FindWhat = "[<][//]key[>]*[<][//]article[>]"
+    PropsAndVals = "type = " & Chr(39) & "h" & Chr(39)
+    c = find_and_markup_all(FindWhat, "definition", PropsAndVals, True, 6, 11)
 End Sub
 Sub MarkupKeys()
+    Call init_global_vars
  ' *************Demarkation****************
-    Dim InsertWhat As String
+    Dim TagName As String
     Dim FindWhat As String
-    FindWhat = "[<]article[>]" & g_ky_origin & g_punct & "]" & "." & Chr(13) & "[A-Za-z" & g_tr_origin & "]"
-    InsertWhat = Chr(13) & "</article>" & Chr(13) & "<article>"
-    n = find_and_insert_at_all(m_FindWhat:=FindWhat, m_InsertWhere:=-2, m_InsertWhat:=InsertWhat, m_MatchWildCards:=True)
+    FindWhat = "[<]article[>]" & Chr(13) & "[A-Za-z" & g_tr_origin & "]@>"
+    TagName = "key"
+    
+    n = find_and_markup_all(FindWhat, TagName, , True, 10, 0)
+    'n = find_and_insert_at_all(m_FindWhat:=FindWhat, m_InsertWhere:=-2, m_InsertWhat:=InsertWhat, m_MatchWildCards:=True)
     ' ******************************************
 End Sub
 Sub MarkupArticles()
@@ -79,15 +93,15 @@ loop_limit = 0
 mark_pointed_lines = exit_code
 End Function
 
-Function mark_line_containing(ByVal m_what, ByVal m_tag) As Boolean
+Function mark_line_containing(ByVal m_what, ByVal m_Tag) As Boolean
     Dim r As Range
     Set r = find_str(m_what)
     If (r Is Nothing) = False Then
     
         Selection.HomeKey wdLine
-        Selection.Range.InsertBefore "<" & m_tag & ">"
+        Selection.Range.InsertBefore "<" & m_Tag & ">"
         Selection.EndKey wdLine
-        Selection.Range.InsertAfter "</" & m_tag & ">"
+        Selection.Range.InsertAfter "</" & m_Tag & ">"
         
         mark_line_containing = True
     Else
@@ -102,7 +116,7 @@ Sub application_of_remove_tag_all()
     'Set r = remove_tag_all("LI")
     Set r = remove_tag_all("LI_Label")
 End Sub
-Function remove_tag_all(m_tag As String) As Range
+Function remove_tag_all(m_Tag As String) As Range
 ' Removes all occurrencies of <m_tag>, </m_tag> and <m_tag/>
     Dim n As Long
     Dim r As Long
@@ -110,9 +124,9 @@ Function remove_tag_all(m_tag As String) As Range
     Dim close_t As String
     Dim empty_t As String
     
-    open_t = "<" & m_tag & ">"
-    close_t = "</" & m_tag & ">"
-    empty_t = "<" & m_tag & "/>"
+    open_t = "<" & m_Tag & ">"
+    close_t = "</" & m_Tag & ">"
+    empty_t = "<" & m_Tag & "/>"
     n = replace_all(open_t, "")
     MsgBox (n & " open tags were removed!")
     r = replace_all(close_t, "")
@@ -132,7 +146,7 @@ Sub application_of_replace_tag_all()
     'Set r = replace_tag_all("L", "P")
     Set r = replace_tag_all("LI_Title", "")
 End Sub
-Function replace_tag_all(m_tag As String, m_new_tag As String) As Range
+Function replace_tag_all(m_Tag As String, m_new_tag As String) As Range
 ' If m_new_tag is "" then removes all occurrencies of <m_tag>, </m_tag> and <m_tag/>
 ' Otherwise substitudes m_tag occurencies by m_new_tag value
     Dim n As Long
@@ -145,13 +159,13 @@ Function replace_tag_all(m_tag As String, m_new_tag As String) As Range
     Dim new_empty_t As String
     
     If m_new_tag = "" Then
-        Set replace_tag_all = remove_tag_all(m_tag)
+        Set replace_tag_all = remove_tag_all(m_Tag)
         Exit Function
     End If
     
-    open_t = "<" & m_tag & ">"
-    close_t = "</" & m_tag & ">"
-    empty_t = "<" & m_tag & "/>"
+    open_t = "<" & m_Tag & ">"
+    close_t = "</" & m_Tag & ">"
+    empty_t = "<" & m_Tag & "/>"
     
     new_open_t = "<" & m_new_tag & ">"
     new_close_t = "</" & m_new_tag & ">"
@@ -182,7 +196,7 @@ Sub apply_pattern1_1()
         'r.Select
         
         Selection.Range.SetRange Start:=r.Start, End:=r.End
-        Selection.Collapse Direction:=wdCollapseEnd
+        Selection.Collapse direction:=wdCollapseEnd
     Loop
     
     
@@ -220,10 +234,52 @@ Function find_and_insert_at_all(m_FindWhat As String, m_InsertWhere As Integer, 
         'r.Select
         
         Selection.Range.SetRange Start:=r.Start, End:=r.End
-        Selection.Collapse Direction:=wdCollapseEnd
+        Selection.Collapse direction:=wdCollapseEnd
         counter = counter + 1
     Loop
     find_and_insert_at_all = counter
+End Function
+Function find_and_markup_all(m_FindWhat As String, m_Tag As String, Optional m_PropsAndVals As String = "", Optional m_MatchWildCards As Boolean = False, Optional m_MoveLeft As Integer = 0, Optional m_MoveRight As Integer = 0) As Long
+' finds some text and marks it with specified tag with properties
+'
+    ' Performing search and markup on each iteration
+    Dim r As Range
+    Dim counter As Long
+    counter = 0
+    Selection.HomeKey unit:=wdStory
+    Do
+        Set r = find_str(m_FindWhat, m_MatchWildCards)
+        If r Is Nothing Then
+            MsgBox (counter & " Nothing was found! Good bay !")
+            find_and_markup_all = counter
+            Exit Function
+        End If
+    ' Go here if target is found.
+        ' adjustments on range boundaries
+        If m_MoveLeft <> 0 Or m_MoveRight <> 0 Then
+            r.MoveStart unit:=wdCharacter, Count:=m_MoveLeft
+            r.MoveEnd unit:=wdCharacter, Count:=-m_MoveRight
+            r.Select
+        End If
+        ' tag assembling for markup
+        Dim start_tag As String
+        Dim end_tag As String
+        If m_PropsAndVals <> "" Then
+            ' putting delimiting whitespace
+            Dim tmp As String
+            tmp = m_PropsAndVals
+            m_PropsAndVals = " " & tmp
+        End If
+        start_tag = "<" & m_Tag & m_PropsAndVals & ">"
+        end_tag = "</" & m_Tag & ">"
+        ' marking up
+        Selection.Range.InsertBefore start_tag
+        Selection.Range.InsertAfter end_tag
+        Selection.Collapse direction:=wdCollapseEnd
+        ' incrementing loop counter
+        counter = counter + 1
+    Loop
+    find_and_markup_all = counter
 End Function
 Function insert_at(ByRef m_rng As Range, ByVal m_InsertWhere As Integer, ByVal m_what As String) As Range
     If m_InsertWhere > m_rng.Characters.Count Then
