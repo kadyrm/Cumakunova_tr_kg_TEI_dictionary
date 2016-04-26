@@ -306,8 +306,17 @@ Sub test_select_word()
     Set r = select_word_at(r)
 End Sub
 Function change_charset(m_letter As String) As String
-
+' under development
+    Dim tr_chars As String
+    Dim ky_chars As String
+    tr_chars = "ABCEHKMOPTX acekopxy"
+    ky_chars = "ÀÂÑÅÍÊÌÎĞÒÕ àñåêîğõó"
+    Selection.InsertAfter ky_chars
+    change_charset = ""
 End Function
+Sub test_change_charset()
+ r = change_charset("")
+End Sub
 Function insert_at(ByRef m_rng As Range, ByVal m_InsertWhere As Integer, ByVal m_what As String) As Range
     If m_InsertWhere > m_rng.Characters.Count Then
         Set insert_at = Nothing
