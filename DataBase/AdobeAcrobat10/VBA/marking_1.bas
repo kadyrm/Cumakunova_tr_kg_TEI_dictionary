@@ -32,7 +32,7 @@ g_tr_origin = (ChrW(246)) & ChrW(252) & ChrW(351) & ChrW(305) & ChrW(231) & ChrW
 'punctuation chars
 g_punct = ")?" ' Issue: '!' cannot be added here with wildcards
 
-g_ky_charset = "¿¡¬√ƒ≈®∆«»… ÀÃÕŒœ–—“”‘’÷◊Ÿ‹€⁄›ﬁﬂ" & LCase("¿¡¬√ƒ≈®∆«»… ÀÃÕŒœ–—“”‘’÷◊Ÿ‹€⁄›ﬁﬂ") & g_ky_origin
+g_ky_charset = "????????????????????????????????" & LCase("????????????????????????????????") & g_ky_origin
 g_tr_charset = "ABCDEFGHIGKLMNOPQRSTUVWXYZ" & LCase("ABCDEFGHIGKLMNOPQRSTUVWXYZ") & g_tr_origin
 
 End Function
@@ -48,8 +48,28 @@ Sub main()
     Call MarkupKeys
     
 End Sub
+Sub ManualValidation()
+'
+    Dim FindWhat As String
+    Dim PropsAndVals As String
+    FindWhat = "[<]article[>]" & Chr(13) & "[!<]"
+    
+    Set c = find_str(FindWhat, True)
+    
+End Sub
+Sub MarkupContent_all()
+ '
+    Dim FindWhat As String
+    Dim PropsAndVals As String
+    FindWhat = "type = " & Chr(39) & "h" & Chr(39) & "[>]*[<][//]definition[>]"
+    
+    c = find_and_markup_all(FindWhat, "CDATA", , True, 11, 13)
+    k = replace_all("<CDATA>", "<![CDATA[")
+    k = replace_all("</CDATA>", "]]>")
+    MsgBox "Content Markup is finished!"
+End Sub
 Sub MarkupDefinitions()
- ' *************Demarkation****************
+ ' *****************************
     Dim FindWhat As String
     Dim PropsAndVals As String
     FindWhat = "[<][//]key[>]*[<][//]article[>]"
@@ -58,22 +78,20 @@ Sub MarkupDefinitions()
 End Sub
 Sub MarkupKeys()
     Call init_global_vars
- ' *************Demarkation****************
+ ' *****************************
     Dim TagName As String
     Dim FindWhat As String
     FindWhat = "[<]article[>]" & Chr(13) & "[A-Za-z" & g_tr_origin & "]@>"
     TagName = "key"
     
     n = find_and_markup_all(FindWhat, TagName, , True, 10, 0)
-    'n = find_and_insert_at_all(m_FindWhat:=FindWhat, m_InsertWhere:=-2, m_InsertWhat:=InsertWhat, m_MatchWildCards:=True)
-    ' ******************************************
 End Sub
 Sub MarkupArticles()
     Selection.HomeKey unit:=wdStory
     ' *************Demarkation****************
     Dim InsertWhat As String
     Dim FindWhat As String
-    FindWhat = "[¿-ﬂ‡-ˇ" & g_ky_origin & g_punct & "]" & "." & Chr(13) & "[A-Za-z" & g_tr_origin & "]"
+    FindWhat = "[?-??-?" & g_ky_origin & g_punct & "]" & "." & Chr(13) & "[A-Za-z" & g_tr_origin & "]"
     InsertWhat = Chr(13) & "</article>" & Chr(13) & "<article>"
     n = find_and_insert_at_all(m_FindWhat:=FindWhat, m_InsertWhere:=-2, m_InsertWhat:=InsertWhat, m_MatchWildCards:=True)
     ' ******************************************
@@ -218,7 +236,7 @@ Sub application_find_and_insert_at_all()
     ' *************
     Dim InsertWhat As String
     Dim FindWhat As String
-    FindWhat = "[¿-ﬂ‡-ˇ" & g_ky_origin & g_punct & "]" & "." & Chr(13) & "[A-Za-z" & g_tr_origin & "]"
+    FindWhat = "[?-??-?" & g_ky_origin & g_punct & "]" & "." & Chr(13) & "[A-Za-z" & g_tr_origin & "]"
     InsertWhat = Chr(13) & "</article>" & Chr(13) & "<article>"
     n = find_and_insert_at_all(m_FindWhat:=FindWhat, m_InsertWhere:=-2, m_InsertWhat:=InsertWhat, m_MatchWildCards:=True)
     ' *************
@@ -259,7 +277,7 @@ Function find_and_markup_all(m_FindWhat As String, m_Tag As String, Optional ByV
     Do
         Set r = find_str(m_FindWhat, m_MatchWildCards)
         If r Is Nothing Then
-            MsgBox (counter & " Nothing was found! Good bay !")
+            MsgBox (counter & " Exiting find_and_markup_all! ")
             find_and_markup_all = counter
             Exit Function
         End If
@@ -310,7 +328,7 @@ Function change_charset(m_letter As String) As String
     Dim tr_chars As String
     Dim ky_chars As String
     tr_chars = "ABCEHKMOPTX acekopxy"
-    ky_chars = "¿¬—≈Õ ÃŒ–“’ ‡ÒÂÍÓıÛ"
+    ky_chars = "??????????? ????????"
     Selection.InsertAfter ky_chars
     change_charset = ""
 End Function
@@ -333,6 +351,7 @@ Function insert_at(ByRef m_rng As Range, ByVal m_InsertWhere As Integer, ByVal m
 End Function
 Function replace_all(ByVal m_find As String, ByVal m_replace As String) As Long
     'returns number of replacements
+    MsgBox "Starting replacing_all function."
     replace_all = CountNoOfReplaces(m_find, m_replace)
 End Function
 Sub application_of_replace_all()
@@ -452,7 +471,7 @@ Sub test_find_with_wildcards()
     Call init_global_vars
     ' Start searching
     'MsgBox g_punct
-    Set r = find_str(m_FindWhat:="[¿-ﬂ‡-ˇ" & g_ky_origin & g_punct & "]" & "." & Chr(13) & "[A-Za-z]", m_MatchWildCards:=True)
+    Set r = find_str(m_FindWhat:="[?-??-?" & g_ky_origin & g_punct & "]" & "." & Chr(13) & "[A-Za-z]", m_MatchWildCards:=True)
 End Sub
 Sub test_find_white_space_eoe()
     Dim r As Range
@@ -611,3 +630,5 @@ Function GetAbsoluteLineNum(r As Range) As Integer
     r.Select
     GetAbsoluteLineNum = Count
 End Function
+
+
