@@ -1,4 +1,20 @@
-﻿<article>
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet 	type="text/xsl"
+					version ="2.0"
+					href="601_700[1].xsl"?>
+<stardict xmlns:xi="http://www.w3.org/2003/XInclude">
+<info>
+<version>2.4.2</version>
+<bookname>Jumakunova Turkish-Kyrgyz. 601-700</bookname>
+<author>Momunaliev K.</author>
+<email>unbrim@gmail.com, kadyr.momunaliev@gmail.com</email>
+<website>www.manas.kg</website>
+<description>Copyright: Kyrgyz Encyclopedia Editorial Board;</description>
+<date>2016.04.30</date>
+<dicttype>Textual StarDict Dictionary</dicttype>
+</info>
+
+<article>
 <key>mayıs</key><definition type = 'h'><![CDATA[ I май (айы). ~ böceği зоол.тампыс (Melolontha vulgaris).]]></definition>
 </article>
 <article>
@@ -7564,5 +7580,4 @@ patrik, -ği дин патриарх. Rum ~i грек патриархы. Ermeni
 <article>
 <key>pay</key><definition type = 'h'><![CDATA[ 1. үлүш, пай, бөлүк. hakikat ~ı чындыктын үлүшү. emek ~ı эмгек үзүрү. 2. пай (тигиште). 3. өтм. жеме, тил, сөгүш, сабак. ağzının ~ı сөзүнүн жообу. 4. аск. согуштук комплект. 5. ресурс. 6. мат.]]></definition>
 </article>
-
-
+</stardict>
