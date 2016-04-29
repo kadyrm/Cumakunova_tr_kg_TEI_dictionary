@@ -6,8 +6,8 @@
 <pma_xml_export version="1.0" xmlns:pma="http://www.phpmyadmin.net/some_doc_url/">
 	<pma:structure_schemas>
         <pma:database name="dictionaries" collation="utf8_general_ci" charset="utf8">
-            <pma:table name="dict_cumakunova_35_200">
-                CREATE TABLE `dict_cumakunova_35_200` (
+            <pma:table name="dict_cumakunova_601_700">
+                CREATE TABLE `dict_cumakunova_601_700` (
                   `id` int(11) NOT NULL AUTO_INCREMENT,
                   `term` varchar(1500) NOT NULL,
                   `definition` text NOT NULL,
@@ -20,7 +20,7 @@
 ]]>
 
 <xsl:for-each select="stardict/article">
-<![CDATA[<table name="dict_cumakunova_35_200">]]><br/>
+<![CDATA[<table name="dict_cumakunova_601_700">]]><br/>
 		<![CDATA[<column name="id">]]>NULL<![CDATA[</column>]]><br/>
 		<![CDATA[<column name="term">]]><xsl:value-of select="key"/><![CDATA[</column>]]><br/>
 		<![CDATA[<column name="definition">[CDATA[]]>

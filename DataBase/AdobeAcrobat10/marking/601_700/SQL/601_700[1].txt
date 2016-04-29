@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet 	type="text/xsl"
 					version ="2.0"
-					href="601_700[1].xsl"?>
+					href="convert_dict_1.xsl"?>
 <stardict xmlns:xi="http://www.w3.org/2003/XInclude">
 <info>
 <version>2.4.2</version>
 <bookname>Jumakunova Turkish-Kyrgyz. 601-700</bookname>
 <author>Momunaliev K.</author>
-<email>unbrim@gmail.com, kadyr.momunaliev@gmail.com</email>
-<website>www.manas.kg</website>
+<email>kadyr.momunaliev@gmail.com</email>
+<website>www.develop.in.kg</website>
 <description>Copyright: Kyrgyz Encyclopedia Editorial Board;</description>
 <date>2016.04.30</date>
 <dicttype>Textual StarDict Dictionary</dicttype>
