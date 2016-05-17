@@ -48,8 +48,11 @@ Sub main()
     ' lets normalize spaces
     m = replace_all_repeatedly(" " & " ", " ")
     '' Subdevide the plain text to article elements
-    'Call MarkupArticles
+    Call MarkupArticles
     Call MarkupKeys
+    Call MarkupDefinitions
+    Call MarkupContent_all
+    
     
 End Sub
 Sub ManualValidation()
