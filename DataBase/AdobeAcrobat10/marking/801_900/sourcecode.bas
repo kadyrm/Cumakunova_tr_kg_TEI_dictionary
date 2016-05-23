@@ -23,6 +23,7 @@ Attribute VB_Name = "Module2"
         Dim g_ky_charset As String
         ' Turkish unique characters
         Dim g_tr_origin As String
+        Dim g_tr_exept As String
         Dim g_tr_charset As String
         'punctuation chars
         Dim g_punct As String
@@ -33,9 +34,11 @@ g_ky_origin = (ChrW(1199)) & ChrW(1257) & ChrW(1187) & ChrW(1186) & ChrW(1198) &
 ' Turkish unique characters
 ' i.e. 246-o  252-u  351-s  305-i  231-c  287-g; C-199 O-214 S-350 I-304 U-220 G-286
 g_tr_origin = (ChrW(246)) & ChrW(252) & ChrW(351) & ChrW(305) & ChrW(231) & ChrW(287) & ChrW(199) & ChrW(214) & ChrW(350) & ChrW(304) & ChrW(220) & ChrW(286)
-'punctuation chars
+' chars that may occur inside Turkish words
+'       paranthesis  unicode paranthesis
+g_tr_exept = Chr(39) + ChrW(8217)
+'punctuation chars, full stop equivalents
 g_punct = ")?"
-
 g_ky_charset = "юабцде╗фгхийклмнопярстужвыэшзщчъ" & LCase("юабцде╗фгхийклмнопярстужвыэшзщчъ") & g_ky_origin
 g_tr_charset = "ABCDEFGHIGKLMNOPQRSTUVWXYZ" & LCase("ABCDEFGHIGKLMNOPQRSTUVWXYZ") & g_tr_origin
 
@@ -88,12 +91,13 @@ Sub MarkupKeys()
  ' *****************************
     Dim TagName As String
     Dim FindWhat As String
-    FindWhat = "[<]article[>]" & Chr(13) & "[A-Za-z" & g_tr_origin & "]@>"
+    FindWhat = "[<]article[>]" & Chr(13) & "[A-Za-z" & g_tr_origin & g_tr_exept & "]@>"
     TagName = "key"
     
     n = find_and_markup_all(FindWhat, TagName, , True, 10, 0)
 End Sub
 Sub MarkupArticles()
+    Call init_global_vars
     Selection.HomeKey unit:=wdStory
     ' *************Demarkation****************
     Dim InsertWhat As String
