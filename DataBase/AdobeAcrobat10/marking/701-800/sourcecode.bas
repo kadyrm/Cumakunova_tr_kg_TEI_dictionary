@@ -5,72 +5,39 @@ Attribute VB_Name = "Module2"
 ' 2) Dim MyVar, AnotherVar As Integer  // MyVar is not Integer in this case, it is Variant
 ' 3) Set var= value // is used only for objects not for var types
 ' 4) r.SetRange  // redefine range bounaries
-' 5) Chr(13) - new line in VBA, Chr(32) - space,
+' 5) Chr(13)    // new line in VBA
 ' 6) ChrW() // Use this instead of chr() when dealing with unicode characters
 ' 7) Optional keyword : Optional arguments are preceded by the Optional keyword in the procedure definition.
 ' 8) Selection.Collapse direction:=wdCollapseEnd // not Selection.range.collapse
 ' 9) Selection object is not a range, therefor it has different methods, e.g: Selection.MoveRight unit:=wdWord, Count:=1, Extend:=wdExtend   'm_cur_pos.MoveEnd unit:=wdWord, Count:=1
-' 10) Issue: '!' cannot be looked up with wildcards. Tried without result to substitude it with chr(33)
-' 11) Turkish specific 'i' (no top point)  character cannot be pushed in Ucase(), as well as Turkish specific 'I' (with top point) cannot be lowercased in LCase()
+' 10) Issue: '!' cannot be added with wildcards
+' 11) Turkish 'i' without upper point cannot be uppercased, and Turkish 'I' with the point cannot be lowercased by means of UCase(String)
 ' 12) Cyrilic letters may be lost in this editor after copying from Notepad++ or other. As a result we have '?' signs.
         'Solution: don't copypaste from thirtparty editor, but import .bas files directly in VBA editor
 ' 13) How to make search for '!' character using wildcards? It's wildcards reserverd character meaning 'not'
-
-'
-'
-'
-'
-'*********Define Macroses Here********************
+'*********
 '
 ' ****Global variables definitions****
-        ' Kyrgyz unique characters
-        Dim g_KY_spec As String
-        Dim g_Cyrillic As String
-        Dim g_KY_word_chars As String
-        Dim g_KY_ext As String
-        Dim g_KY_rend As String
+        'Kyrgyz unique characters
+        Dim g_ky_origin As String
+        Dim g_ky_charset As String
         ' Turkish unique characters
-        Dim g_TR_spec As String
-        Dim g_TR_ext As String
-        Dim g_Latin
-        Dim g_TR_charset As String
-        ' Punctuation chars
+        Dim g_tr_origin As String
+        Dim g_tr_charset As String
+        'punctuation chars
         Dim g_punct As String
-        Dim g_eof As String
 
 Function init_global_vars()
-'Kyrgyz character set
-    'Kyrgyz specific characters
-    g_KY_spec = (ChrW(1199)) & ChrW(1257) & ChrW(1187) & ChrW(1186) & ChrW(1198) & ChrW(1256)
-    'Extra characters that may occur inside a Kyrgyz word
-    g_KY_ext = "-"
-    g_KY_rend = "/(/)"
-    g_Cyrillic = "¿¡¬√ƒ≈®∆«»… ÀÃÕŒœ–—“”‘’÷◊Ÿ‹€⁄›ﬁﬂ" & LCase("¿¡¬√ƒ≈®∆«»… ÀÃÕŒœ–—“”‘’÷◊Ÿ‹€⁄›ﬁﬂ")
-    g_KY_word_chars = g_Cyrillic & g_KY_spec & g_KY_ext
+'Kyrgyz unique characters
+g_ky_origin = (ChrW(1199)) & ChrW(1257) & ChrW(1187) & ChrW(1186) & ChrW(1198) & ChrW(1256)
+' Turkish unique characters
+' i.e. 246-o  252-u  351-s  305-i  231-c  287-g; C-199 O-214 S-350 I-304 U-220 G-286
+g_tr_origin = (ChrW(246)) & ChrW(252) & ChrW(351) & ChrW(305) & ChrW(231) & ChrW(287) & ChrW(199) & ChrW(214) & ChrW(350) & ChrW(304) & ChrW(220) & ChrW(286)
+'punctuation chars
+g_punct = ")?"
 
-' Turkish character set
-    g_Latin = "ABCDEFGHIGKLMNOPQRSTUVWXYZ" & LCase("ABCDEFGHIGKLMNOPQRSTUVWXYZ")
-    ' Turkish specific characters
-    Dim TR_spec As String
-    ' Note: 246-o  252-u  351-s  305-i  231-c  287-g; C-199 O-214 S-350 I-304 U-220 G-286
-        'g_TR_spec = ChrW(246) & ChrW(252) & ChrW(351) & ChrW(305) & ChrW(231) & ChrW(287) & ChrW(199) & ChrW(214) & ChrW(350) & ChrW(304) & ChrW(220) & ChrW(286) & ChrW(226) & ChrW(238) & UCase(ChrW(226) & ChrW(238))
-    TR_spec = ChrW(246) & ChrW(252) & ChrW(351) & ChrW(305) & ChrW(231) & ChrW(287)
-    TR_spec = TR_spec & UCase(TR_spec_lcase)
-    Dim Tr_spec_archaic As String
-    Tr_spec_archaic = ChrW(226) & ChrW(238) & UCase(ChrW(226) & ChrW(238))
-    g_TR_spec = TR_spec & Tr_spec_archaic
-                 
-    ' Extra characters that may occur inside a Turkish word, such as "'" and its unicode version
-    g_TR_ext = Chr(39) & ChrW(8217)
-    g_TR_charset = g_Latin & g_TR_spec & g_TR_ext
-    
-'Punctuation characters
-    'full stop equivalents
-    g_punct = ")?."
-    g_eof = Chr(13)
-    
-
-
+g_ky_charset = "¿¡¬√ƒ≈®∆«»… ÀÃÕŒœ–—“”‘’÷◊Ÿ‹€⁄›ﬁﬂ" & LCase("¿¡¬√ƒ≈®∆«»… ÀÃÕŒœ–—“”‘’÷◊Ÿ‹€⁄›ﬁﬂ") & g_ky_origin
+g_tr_charset = "ABCDEFGHIGKLMNOPQRSTUVWXYZ" & LCase("ABCDEFGHIGKLMNOPQRSTUVWXYZ") & g_tr_origin
 
 End Function
 Sub main()
@@ -121,18 +88,17 @@ Sub MarkupKeys()
  ' *****************************
     Dim TagName As String
     Dim FindWhat As String
-    FindWhat = "[<]article[>]" & Chr(13) & "[A-Za-z" & g_TR_spec & g_TR_ext & "]@>"
+    FindWhat = "[<]article[>]" & Chr(13) & "[A-Za-z" & g_tr_origin & "]@>"
     TagName = "key"
     
     n = find_and_markup_all(FindWhat, TagName, , True, 10, 0)
 End Sub
 Sub MarkupArticles()
-    Call init_global_vars
-    'Selection.HomeKey unit:=wdStory
+    Selection.HomeKey unit:=wdStory
     ' *************Demarkation****************
     Dim InsertWhat As String
     Dim FindWhat As String
-    FindWhat = "[" & g_KY_word_chars & "]" & "[" & g_punct & "]@" & "?" & "[" & g_TR_charset & "]@"
+    FindWhat = "[¿-ﬂ‡-ˇ" & g_ky_origin & g_punct & "]" & "[.?]" & Chr(13) & "[A-Za-z" & g_tr_origin & "]"
     InsertWhat = Chr(13) & "</article>" & Chr(13) & "<article>"
     n = find_and_insert_at_all(m_FindWhat:=FindWhat, m_InsertWhere:=-2, m_InsertWhat:=InsertWhat, m_MatchWildCards:=True)
     ' ******************************************
@@ -277,7 +243,7 @@ Sub application_find_and_insert_at_all()
     ' *************
     Dim InsertWhat As String
     Dim FindWhat As String
-    FindWhat = "[¿-ﬂ‡-ˇ" & g_KY_spec & g_punct & "]" & "." & Chr(13) & "[A-Za-z" & g_TR_spec & "]"
+    FindWhat = "[¿-ﬂ‡-ˇ" & g_ky_origin & g_punct & "]" & "." & Chr(13) & "[A-Za-z" & g_tr_origin & "]"
     InsertWhat = Chr(13) & "</article>" & Chr(13) & "<article>"
     n = find_and_insert_at_all(m_FindWhat:=FindWhat, m_InsertWhere:=-2, m_InsertWhat:=InsertWhat, m_MatchWildCards:=True)
     ' *************
@@ -478,7 +444,7 @@ Selection.Find.ClearFormatting
         .MatchAllWordForms = False
     End With
     Selection.Find.Execute
-    If Selection.Find.Found Then
+    If Selection.Find.found Then
         Set find_str = Selection.Range
     Else
         Set find_str = Nothing
@@ -500,7 +466,7 @@ Selection.Find.ClearFormatting
         .MatchAllWordForms = False
     End With
     Selection.Find.Execute
-    If Selection.Find.Found Then
+    If Selection.Find.found Then
         Set find_with_wildcards = Selection.Range
     Else
         Set find_with_wildcards = Nothing
@@ -512,13 +478,7 @@ Sub test_find_with_wildcards()
     Call init_global_vars
     ' Start searching
     'MsgBox g_punct
-    Dim FindWhat As String
-    Dim TrWord As String
-    Selection.InsertAfter UCase((ChrW(246)) & ChrW(252) & ChrW(351) & ChrW(305) & ChrW(231) & ChrW(287))
-    TrWord = "<[" & g_TR_charset & "]@>"
-    'FindWhat = "[" & g_KY_word_chars & "]" & "[" & g_punct & "]>" & "?" & "[" & g_TR_charset & "]@>" ' & "~"
-    FindWhat = "[" & g_KY_word_chars & "]" & "[" & g_punct & "]" & "?" & "[" & g_TR_charset & "]@" & "[" & g_KY_word_chars & "]"
-    Set r = find_str(m_FindWhat:=TrWord, m_MatchWildCards:=True)
+    Set r = find_str(m_FindWhat:="[¿-ﬂ‡-ˇ" & g_ky_origin & g_punct & "]" & "." & Chr(13) & "[A-Za-z]", m_MatchWildCards:=True)
 End Sub
 Sub test_find_white_space_eoe()
     Dim r As Range
