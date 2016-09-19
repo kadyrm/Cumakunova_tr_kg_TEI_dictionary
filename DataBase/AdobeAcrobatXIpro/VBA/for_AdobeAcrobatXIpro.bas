@@ -1,4 +1,4 @@
-Attribute VB_Name = "Module2"
+Attribute VB_Name = "NewMacros"
 ' *****Notes*****
 ' Encountered issues:
 ' 1) (obj is Nothing) // it's incorrect to use Null, since it is the term of database whereas Nothing relates to programming
@@ -62,14 +62,14 @@ Sub main()
     
     
 End Sub
-Function is_eod1(r As range) As Boolean
-    Dim temp_r As range
-    Set temp_r = Selection.range
+Function is_eod1(r As Range) As Boolean
+    Dim temp_r As Range
+    Set temp_r = Selection.Range
     
-    Selection.HomeKey unit:=wdStory
-    Selection.EndKey unit:=wdStory, Extend:=wdExtend
+    Selection.HomeKey Unit:=wdStory
+    Selection.EndKey Unit:=wdStory, Extend:=wdExtend
     Dim last_char As Long
-    last_char = Selection.range.End
+    last_char = Selection.Range.End
     If r.Start = last_char - 1 Then
         is_eod1 = True
     Else
@@ -80,14 +80,14 @@ Function is_eod1(r As range) As Boolean
     Selection.Select
     
 End Function
-Function is_eod2(r As range) As Boolean
-    Dim temp_r As range
-    Set temp_r = Selection.range
+Function is_eod2(r As Range) As Boolean
+    Dim temp_r As Range
+    Set temp_r = Selection.Range
     Dim i1 As Long
     Dim i2 As Long
-    temp_r.MoveEnd unit:=wdCharacter, Count:=1
+    temp_r.MoveEnd Unit:=wdCharacter, Count:=1
     i1 = temp_r.End
-    temp_r.MoveEnd unit:=wdCharacter, Count:=1
+    temp_r.MoveEnd Unit:=wdCharacter, Count:=1
     i2 = temp_r.End
     If i1 = i2 Then
         is_eod2 = True
@@ -97,7 +97,43 @@ Function is_eod2(r As range) As Boolean
     
 End Function
 
+Sub MarkupLines()
 
+Dim counter As Integer
+Selection.HomeKey Unit:=wdStory
+    
+Do While Not is_eod2(Selection.Range)
+    
+    Selection.EndKey Unit:=wdLine
+    Selection.MoveLeft Unit:=wdWord, Count:=1, Extend:=wdExtend
+    Selection.Font.Color = wdColorRed
+    Selection.EndKey Unit:=wdLine
+    Selection.MoveRight Unit:=wdCharacter, Count:=2
+        
+    counter = deadlock_saveguard(counter, 500, "MarkupLines")
+    
+Loop
+
+
+    Selection.HomeKey Unit:=wdStory
+    Selection.Find.ClearFormatting
+    Selection.Find.Font.Color = wdColorRed
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find
+        .Text = ""
+        .Replacement.Text = "^&</line>^p<line>"
+        .Forward = True
+        .Wrap = wdFindContinue
+        .Format = True
+        .MatchCase = False
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute Replace:=wdReplaceAll
+
+End Sub
 Sub ManualValidation()
 '
     Dim FindWhat As String
@@ -137,7 +173,7 @@ Sub MarkupKeys()
     n = find_and_markup_all(FindWhat, TagName, , True, 10, 0)
 End Sub
 Sub MarkupArticles()
-    Selection.HomeKey unit:=wdStory
+    Selection.HomeKey Unit:=wdStory
     ' *************Demarkation****************
     Dim InsertWhat As String
     Dim FindWhat As String
@@ -146,10 +182,10 @@ Sub MarkupArticles()
     n = find_and_insert_at_all(m_FindWhat:=FindWhat, m_InsertWhere:=-2, m_InsertWhat:=InsertWhat, m_MatchWildCards:=True)
     ' ******************************************
     ' Completing first and last articles
-    Selection.HomeKey unit:=wdStory
-    Selection.range.InsertAfter "<article>"
-    Selection.EndKey unit:=wdStory
-    Selection.range.InsertAfter "</article>"
+    Selection.HomeKey Unit:=wdStory
+    Selection.Range.InsertAfter "<article>"
+    Selection.EndKey Unit:=wdStory
+    Selection.Range.InsertAfter "</article>"
 End Sub
 Sub Show_ascw()
     Dim kod As Long
@@ -177,14 +213,14 @@ mark_pointed_lines = exit_code
 End Function
 
 Function mark_line_containing(ByVal m_what, ByVal m_Tag) As Boolean
-    Dim r As range
+    Dim r As Range
     Set r = find_str(m_what)
     If (r Is Nothing) = False Then
     
         Selection.HomeKey wdLine
-        Selection.range.InsertBefore "<" & m_Tag & ">"
+        Selection.Range.InsertBefore "<" & m_Tag & ">"
         Selection.EndKey wdLine
-        Selection.range.InsertAfter "</" & m_Tag & ">"
+        Selection.Range.InsertAfter "</" & m_Tag & ">"
         Selection.Collapse wdCollapseEnd
         mark_line_containing = True
     Else
@@ -193,13 +229,13 @@ Function mark_line_containing(ByVal m_what, ByVal m_Tag) As Boolean
 
 End Function
 Sub application_of_remove_tag_all()
-    Dim r As range
+    Dim r As Range
     'Set r = remove_tag_all("Sect")
     'Set r = remove_tag_all("Part")
     'Set r = remove_tag_all("LI")
     Set r = remove_tag_all("LI_Label")
 End Sub
-Function remove_tag_all(m_Tag As String) As range
+Function remove_tag_all(m_Tag As String) As Range
 ' Removes all occurrencies of <m_tag>, </m_tag> and <m_tag/>
     Dim n As Long
     Dim r As Long
@@ -220,14 +256,14 @@ Function remove_tag_all(m_Tag As String) As range
     n = replace_all(empty_t, "")
     MsgBox (n & " empty tags were removed!")
     
-    Set remove_tag_all = Selection.range
+    Set remove_tag_all = Selection.Range
 End Function
 Sub application_of_mark_lines_pointed()
     Dim response As Boolean
     response = mark_lines_pointed("header", "header")
 End Sub
 Sub application_of_replace_tag_all()
-    Dim r As range
+    Dim r As Range
     'Set r = replace_tag_all("Sect")
     'Set r = replace_tag_all("H5", "P")
     'Set r = replace_tag_all("L", "P")
@@ -243,7 +279,7 @@ Sub application_of_markup_all()
     
     n = find_and_markup_all(FindWhat, TagName, , True, 10, 0)
 End Sub
-Function replace_tag_all(m_Tag As String, m_new_tag As String) As range
+Function replace_tag_all(m_Tag As String, m_new_tag As String) As Range
 ' If m_new_tag is "" then removes all occurrencies of <m_tag>, </m_tag> and <m_tag/>
 ' Otherwise substitudes m_tag occurencies by m_new_tag value
     Dim n As Long
@@ -278,11 +314,11 @@ Function replace_tag_all(m_Tag As String, m_new_tag As String) As range
     n = replace_all(empty_t, new_empty_t)
         MsgBox (n & " empty tags were replaced!")
     
-    Set replace_tag_all = Selection.range
+    Set replace_tag_all = Selection.Range
 End Function
 
 Sub apply_pattern1_1()
-    Dim r As range
+    Dim r As Range
     Do
         Set r = find_str(".^w^p</P>^p<P>^$")
         If r Is Nothing Then
@@ -292,7 +328,7 @@ Sub apply_pattern1_1()
         Set r = insert_at(r, r.Characters.Count - 4, "</article>" & Chr(13) & "<article>" & Chr(13))
         'r.Select
         
-        Selection.range.SetRange Start:=r.Start, End:=r.End
+        Selection.Range.SetRange Start:=r.Start, End:=r.End
         Selection.Collapse direction:=wdCollapseEnd
     Loop
     
@@ -313,7 +349,7 @@ Sub application_find_and_insert_at_all()
 End Sub
 Function find_and_insert_at_all(m_FindWhat As String, m_InsertWhere As Integer, m_InsertWhat As String, Optional m_MatchWildCards As Boolean = False) As Long
 ' if m_InsertWhere is negative the function will insert the text at the position m_InsertWhere steps to the left from the end of the found range
-    Dim r As range
+    Dim r As Range
     Dim counter As Long
     counter = 0
     Do
@@ -330,7 +366,7 @@ Function find_and_insert_at_all(m_FindWhat As String, m_InsertWhere As Integer, 
         End If
         'r.Select
         
-        Selection.range.SetRange Start:=r.Start, End:=r.End
+        Selection.Range.SetRange Start:=r.Start, End:=r.End
         Selection.Collapse direction:=wdCollapseEnd
         counter = counter + 1
     Loop
@@ -345,10 +381,10 @@ Function find_and_markup_all(m_FindWhat As String, m_Tag As String, Optional ByV
 ' finds all the occurencies of the text and marks it with the specified tag and atributes
 '
     ' Performing search and markup on each iteration
-    Dim r As range
+    Dim r As Range
     Dim counter As Long
     counter = 0
-    Selection.HomeKey unit:=wdStory
+    Selection.HomeKey Unit:=wdStory
     Do
         Set r = find_str(m_FindWhat, m_MatchWildCards)
         If r Is Nothing Then
@@ -359,8 +395,8 @@ Function find_and_markup_all(m_FindWhat As String, m_Tag As String, Optional ByV
     ' Go here if target is found.
         ' adjustments on range boundaries
         If m_MoveLeft <> 0 Or m_MoveRight <> 0 Then
-            r.MoveStart unit:=wdCharacter, Count:=m_MoveLeft
-            r.MoveEnd unit:=wdCharacter, Count:=-m_MoveRight
+            r.MoveStart Unit:=wdCharacter, Count:=m_MoveLeft
+            r.MoveEnd Unit:=wdCharacter, Count:=-m_MoveRight
             r.Select
         End If
         ' tag assembling for markup
@@ -375,22 +411,22 @@ Function find_and_markup_all(m_FindWhat As String, m_Tag As String, Optional ByV
         start_tag = "<" & m_Tag & m_PropsAndVals & ">"
         end_tag = "</" & m_Tag & ">"
         ' marking up
-        Selection.range.InsertBefore start_tag
-        Selection.range.InsertAfter end_tag
+        Selection.Range.InsertBefore start_tag
+        Selection.Range.InsertAfter end_tag
         Selection.Collapse direction:=wdCollapseEnd
         ' incrementing loop counter
         counter = counter + 1
     Loop
     find_and_markup_all = counter
 End Function
-Function select_word_at(m_Where As range) As range
+Function select_word_at(m_Where As Range) As Range
 ' selects the word the m_Where range is in
     m_Where.Select
-    Selection.MoveRight unit:=wdWord, Count:=1, Extend:=wdExtend
+    Selection.MoveRight Unit:=wdWord, Count:=1, Extend:=wdExtend
     Selection.Collapse direction:=wdCollapseEnd
-    Selection.MoveLeft unit:=wdWord, Count:=1, Extend:=wdExtend
+    Selection.MoveLeft Unit:=wdWord, Count:=1, Extend:=wdExtend
     
-    Set m_Where = Selection.range
+    Set m_Where = Selection.Range
     Set select_word_at = m_Where
 End Function
 Sub MarkHeaders()
@@ -402,8 +438,8 @@ Sub MarkHeaders()
     r = replace_all("<header><header>", "<header>")
 End Sub
 Sub test_select_word()
-    Dim r As range
-    Set r = Selection.range
+    Dim r As Range
+    Set r = Selection.Range
     Set r = select_word_at(r)
 End Sub
 Function change_charset(m_letter As String) As String
@@ -418,13 +454,13 @@ End Function
 Sub test_change_charset()
  r = change_charset("")
 End Sub
-Function insert_at(ByRef m_rng As range, ByVal m_InsertWhere As Integer, ByVal m_what As String) As range
+Function insert_at(ByRef m_rng As Range, ByVal m_InsertWhere As Integer, ByVal m_what As String) As Range
     If m_InsertWhere > m_rng.Characters.Count Then
         Set insert_at = Nothing
         Exit Function
     End If
     
-    Dim r As range
+    Dim r As Range
     Set r = m_rng
     r.SetRange Start:=m_rng.Start + m_InsertWhere, End:=m_rng.End
     r.InsertBefore (m_what)
@@ -473,7 +509,7 @@ Dim NumCharsBefore As Long, NumCharsAfter As Long, LengthsAreEqual As Boolean
         .MatchWildcards = False
         .MatchSoundsLike = False
         .MatchAllWordForms = False
-        .Execute replace:=wdReplaceAll
+        .Execute Replace:=wdReplaceAll
     End With
 
     'Get the number of chars AFTER doing Find & Replace
@@ -495,7 +531,7 @@ Dim NumCharsBefore As Long, NumCharsAfter As Long, LengthsAreEqual As Boolean
         With Selection.Find
             .Text = StrFind
             .Replacement.Text = StrReplace
-            .Execute replace:=wdReplaceAll
+            .Execute Replace:=wdReplaceAll
         End With
 
     End If
@@ -505,7 +541,7 @@ Dim NumCharsBefore As Long, NumCharsAfter As Long, LengthsAreEqual As Boolean
     ActiveDocument.UndoClear
 
 End Function
-Function find_str(ByVal m_FindWhat As String, Optional m_MatchWildCards As Boolean = False) As range
+Function find_str(ByVal m_FindWhat As String, Optional m_MatchWildCards As Boolean = False) As Range
 Selection.Find.ClearFormatting
     With Selection.Find
         .Text = m_FindWhat
@@ -520,14 +556,14 @@ Selection.Find.ClearFormatting
         .MatchAllWordForms = False
     End With
     Selection.Find.Execute
-    If Selection.Find.found Then
-        Set find_str = Selection.range
+    If Selection.Find.Found Then
+        Set find_str = Selection.Range
     Else
         Set find_str = Nothing
     End If
     
 End Function
-Function find_with_wildcards(ByVal m_what As String) As range
+Function find_with_wildcards(ByVal m_what As String) As Range
 Selection.Find.ClearFormatting
     With Selection.Find
         .Text = m_what
@@ -542,8 +578,8 @@ Selection.Find.ClearFormatting
         .MatchAllWordForms = False
     End With
     Selection.Find.Execute
-    If Selection.Find.found Then
-        Set find_with_wildcards = Selection.range
+    If Selection.Find.Found Then
+        Set find_with_wildcards = Selection.Range
     Else
         Set find_with_wildcards = Nothing
     End If
@@ -561,16 +597,16 @@ Sub test_find_with_wildcards()
     Set r = find_str(FindWhat, True)
 End Sub
 Sub test_find_white_space_eoe()
-    Dim r As range
-    Set r = find_EOE_terminated_by_white_space(Selection.range)
+    Dim r As Range
+    Set r = find_EOE_terminated_by_white_space(Selection.Range)
 End Sub
-Function find_EOE_fs_cr_l(m_r As range) As range
+Function find_EOE_fs_cr_l(m_r As Range) As Range
     
 End Function
-Function find_EOE_terminated_by_white_space(m_r As range) As range
+Function find_EOE_terminated_by_white_space(m_r As Range) As Range
 ' source file to be marked: Some Web Engine
 ' EOE - End of Entry
-    Dim r As range
+    Dim r As Range
     Dim flag As Boolean
     Dim i As Integer
     flag = False
@@ -626,7 +662,7 @@ Function replace_all_repeatedly(m_what As String, m_by As String)
 End Function
 Sub test_find_double_carret_return()
 
-    Dim r As range
+    Dim r As Range
     Do
         Set r = find_by_ascw(13)
         If r Is Nothing Then
@@ -634,24 +670,24 @@ Sub test_find_double_carret_return()
         End If
         Selection.Collapse wdCollapseEnd
         Selection.MoveRight wdCharacter, 1, True
-        code = AscW(Selection.Text)
-        If code = 13 Then
+        Code = AscW(Selection.Text)
+        If Code = 13 Then
             MsgBox "double par found!!"
             Exit Sub
         End If
         Selection.Collapse wdCollapseEnd
     Loop
 End Sub
-Function find_by_ascw(m_ascw As Long) As range
+Function find_by_ascw(m_ascw As Long) As Range
    
-    Dim r As range
+    Dim r As Range
     str1 = ChrW(m_ascw)
     Set r = find_str(str1)
     Set find_by_ascw = r
     
 End Function
 Sub test_fs_ws_letter()
-    Dim r As range
+    Dim r As Range
     Set r = find_str(".^w^$")
     If r.Bold Then
         MsgBox ("Found range is bold.")
@@ -664,10 +700,10 @@ Sub test_fs_ws_letter()
     End If
     
 End Sub
-Function is_in_one_line(r As range) As Boolean
+Function is_in_one_line(r As Range) As Boolean
     Dim l1, l2 As Integer
-    Dim r1 As range
-    Dim r2 As range
+    Dim r1 As Range
+    Dim r2 As Range
     Set r1 = r.Characters.First
     Set r2 = r.Characters.Last
     l1 = GetLineNum(r1)
@@ -681,29 +717,29 @@ Function is_in_one_line(r As range) As Boolean
 End Function
 Sub WhereAmI()
     
-    MsgBox "Paragraph number: " & GetParNum(Selection.range) & vbCrLf & _
-    "Absolute line number: " & GetAbsoluteLineNum(Selection.range) & vbCrLf & _
-    "Relative line number: " & GetLineNum(Selection.range)
+    MsgBox "Paragraph number: " & GetParNum(Selection.Range) & vbCrLf & _
+    "Absolute line number: " & GetAbsoluteLineNum(Selection.Range) & vbCrLf & _
+    "Relative line number: " & GetLineNum(Selection.Range)
 End Sub
  
  
-Function GetParNum(r As range) As Integer
-    Dim rParagraphs As range
+Function GetParNum(r As Range) As Integer
+    Dim rParagraphs As Range
     Dim CurPos As Long
      
     r.Select
     CurPos = ActiveDocument.Bookmarks("\startOfSel").Start
-    Set rParagraphs = ActiveDocument.range(Start:=0, End:=CurPos)
+    Set rParagraphs = ActiveDocument.Range(Start:=0, End:=CurPos)
     GetParNum = rParagraphs.Paragraphs.Count
 End Function
  
-Function GetLineNum(r As range) As Integer
+Function GetLineNum(r As Range) As Integer
      'relative to current page
     GetLineNum = r.Information(wdFirstCharacterLineNumber)
 End Function
  
-Function GetAbsoluteLineNum(r As range) As Integer
-    Dim i1 As Integer, i2 As Integer, Count As Integer, rTemp As range
+Function GetAbsoluteLineNum(r As Range) As Integer
+    Dim i1 As Integer, i2 As Integer, Count As Integer, rTemp As Range
      
     r.Select
     Do
@@ -717,5 +753,4 @@ Function GetAbsoluteLineNum(r As range) As Integer
     r.Select
     GetAbsoluteLineNum = Count
 End Function
-
 
