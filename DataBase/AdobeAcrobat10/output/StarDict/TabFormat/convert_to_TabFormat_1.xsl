@@ -3,13 +3,13 @@
 <xsl:template match="/">
 
 <xsl:for-each select="stardict/article">
-<br/>
-<br/>
-		<xsl:value-of select="key"/>
-		<![CDATA[Hello]]>	
-		<xsl:value-of select="definition"/>
-		
 
+		<![CDATA[entry_start]]>	
+		<xsl:value-of select="key"/>
+		<![CDATA[Tab_is_here]]>	
+		<xsl:value-of select="definition"/>
+		<![CDATA[entry_end]]>			
+		
 </xsl:for-each>
 </xsl:template>
 </xsl:stylesheet>
