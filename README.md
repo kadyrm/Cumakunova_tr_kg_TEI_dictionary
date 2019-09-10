@@ -1,4 +1,4 @@
-# Jumakunova_tr2ky_dictionary_markup 
+# Creating StarDict markup for the Turkish-Kyrgyz Dictionary by Gulzura Jumakunova  
 
 This is a project on marking up or as it is also said annotation of printed dictionary source.
 Annotation of Cumakunova's Turkish-Kyrgyz dictionary is intended to be performed due to TEI standards
